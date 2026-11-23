@@ -66,7 +66,7 @@ test('searches automatically with debounce and renders titles, years and posters
   await expect(page.getByRole('list', { name: 'Películas encontradas' }).locator('li')).toHaveCount(3)
   await expect(page.getByRole('heading', { name: 'The Matrix', exact: true })).toBeVisible()
   await expect(page.getByText('1999', { exact: true })).toBeVisible()
-  await expect(page.getByAltText('Póster de The Matrix')).toHaveAttribute('src', '/poster-placeholder.svg')
+  await expect(page.getByAltText('Póster de The Matrix', { exact: true })).toHaveAttribute('src', '/poster-placeholder.svg')
   await page.waitForTimeout(650)
   expect(requests).toEqual(['Matrix'])
 })
