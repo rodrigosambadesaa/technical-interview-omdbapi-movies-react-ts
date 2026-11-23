@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Lint and production build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - name: Typecheck and build
+        run: npm run build
+        env:
+          VITE_API_KEY: ci-only-placeholder
+
+  e2e:
+    name: Playwright E2E
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium firefox webkit
+      - run: npm test
+        env:
+          CI: 'true'
+          VITE_API_KEY: ci-only-placeholder
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+
+  docker:
+    name: Docker production smoke test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build production image
+        run: docker build --build-arg VITE_API_KEY=ci-only-placeholder -t omdb-movies:ci .
+      - name: Start and verify container
+        run: |
+          docker run -d --rm --name omdb-ci -p 127.0.0.1:8080:80 omdb-movies:ci
+          trap 'docker stop omdb-ci' EXIT
+          curl --retry 20 --retry-connrefused --retry-delay 2 --fail --silent --show-error http://127.0.0.1:8080/ > /tmp/omdb-index.html
+          grep -q 'CineFinder' /tmp/omdb-index.html
+          curl --fail --silent --show-error http://127.0.0.1:8080/poster-placeholder.svg | grep -q '<svg'

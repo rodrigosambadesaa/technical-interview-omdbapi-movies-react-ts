@@ -1,0 +1,10 @@
+services:
+  movies:
+    build:
+      context: .
+      args:
+        VITE_API_KEY: ${VITE_API_KEY:-}
+        VITE_API_URL: ${VITE_API_URL:-https://www.omdbapi.com/}
+    ports:
+      - "8080:80"
+    restart: unless-stopped
