@@ -146,7 +146,7 @@ function App () {
     setLoadingMore(false)
     setStatus('loading')
 
-    void searchMovies(term, 1, controller.signal)
+    searchMovies(term, 1, controller.signal)
       .then(result => {
         if (activeRequest.current?.controller !== controller) return
         cache.current.set(key, { ...result, page: 1 })
@@ -235,7 +235,7 @@ function App () {
     activeRequest.current = { query: key, page: nextPage, controller }
     setLoadingMore(true)
     setPageError('')
-    void searchMovies(term, nextPage, controller.signal)
+    searchMovies(term, nextPage, controller.signal)
       .then(result => {
         if (activeRequest.current?.controller !== controller) return
         setMovies(previous => {
