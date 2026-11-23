@@ -1,22 +1,12 @@
-export interface IMovies {
-    title: string;
-    year: string;
-    id: string;
-    type: string;
-    img: string;
+export interface Movie {
+  id: string
+  title: string
+  year: string
+  poster: string
+  type: string
 }
 
-export interface SearchEntity {
-    Title: string;
-    Year: string;
-    imdbID: string;
-    Type: string;
-    Poster: string;
-}
-
-export interface Query {
-    Search?: (SearchEntity)[] | null;
-    totalResults?: string;
-    Response: string;
-    Error?: string;
+export interface MoviePage {
+  movies: Movie[]
+  total: number
 }
